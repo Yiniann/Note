@@ -76,10 +76,11 @@ app.delete('/api/persons',(request,express,response)=>{
     response.status(204).end()
 })
 
+const unknowEndPoint=(request,response)=>{
+    response.status(404).json({error:'unknow endpoint'})
+}
 
-app.use((req, res) => {
-    res.status(404).json({ error: 'Unknown endpoint' })
-  })
+app.use(unknowEndPoint)
 
 const PORT = 3001
 app.listen(PORT,()=>{
