@@ -1,6 +1,8 @@
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
-
+morgan.token('body',(req)=>JSON.stringify(req.body))
+app.use(morgan(':method :url :status :response-time ms - :body'))
 app.use(express.json())
 
 let persons = [
@@ -50,7 +52,7 @@ app.get('/info',(request,response)=>{
 })
 
 //增加联系人
-app.post('api/persons',(request,response)=>{
+app.post('/api/persons',(request,response)=>{
     const body = request.body
 
     if(!body.name || !body.number){
@@ -69,7 +71,7 @@ app.post('api/persons',(request,response)=>{
     response.status(201).json(newPerson)
 })
 //删除联系人
-app.delete('/api/persons',(request,express,response)=>{
+app.delete('/api/persons/:id',(request,express,response)=>{
     const id = request.params.id
     persons= persons.filter(person=>person.id !==id)
 
