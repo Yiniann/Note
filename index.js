@@ -16,10 +16,12 @@ app.get('/', (request, response) => {
 
 // 获取所有笔记
 app.get('/api/notes', (request, response, next) => {
+  console.log('Fetching all notes...');
   Note.find({})
     .then(notes => response.json(notes))
     .catch(error => next(error));
 });
+
 
 // 获取单条笔记
 app.get('/api/notes/:id', (request, response, next) => {
