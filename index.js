@@ -1,12 +1,24 @@
 const express = require('express')
-const cors = require('cors')
 const app = express()
+
+require('dotenv').config()//引入环境变量
+
+const Note = require('./models/note')//引入模型
+
+let notes =[]
+
+app.use(express.static('build'))//serving static files
+
+const cors = require('cors')
 const mongoose = require('mongoose')
 app.use(cors())//允许跨域
-app.use(express.static('build'))//serving static files
+
 app.use(express.json())//json解析
-require('dotenv').config()//引入环境变量
-const Note = require('./models/note')//引入模型
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
@@ -48,6 +60,8 @@ app.post('/api/notes', (request, response) => {
     response.json(saveNote)
   })
 })
+
+app.use(unknownEndpoint)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
