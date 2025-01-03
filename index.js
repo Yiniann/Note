@@ -5,6 +5,12 @@ const mongoose = require('mongoose');
 require('dotenv').config(); // 引入环境变量
 const Note = require('./models/note'); // 引入模型
 
+const requestLogger = (request, response, next) => {
+  console.log(`${request.method} ${request.url} - ${new Date()}`);
+  next();
+};
+app.use(requestLogger);
+
 app.use(express.static('build')); // 服务静态文件
 app.use(cors()); // 允许跨域
 app.use(express.json()); // JSON 解析
@@ -33,7 +39,7 @@ app.get('/api/notes/:id', (request, response, next) => {
         response.status(404).end();
       }
     })
-    .catch(error => next(error));
+    .catch(error => next(error))
 });
 
 // 增加笔记
@@ -61,6 +67,18 @@ app.delete('/api/notes/:id', (request, response, next) => {
     .catch(error => next(error));
 });
 
+//修改笔记重要性
+app.put('/api/notes/:id',(request,response,next)=>{
+  const body = request.body
+  const note ={
+    content:body.content,
+    important:body.important
+  }
+  Note.findByIdAndUpdate(request.params.id,note,{new:true})
+  .then(updatedNote =>response.json(updatedNote))
+  .catch(error =>next(error))
+})
+
 // 未知路由处理
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' });
@@ -75,7 +93,15 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({ error: 'malformatted id' });
   }
 
-  next(error);
+  if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message });
+  }
+
+  if (error.code === 11000) {
+    return response.status(400).json({ error: 'duplicate entry' });
+  }
+
+  next(error); 
 };
 app.use(errorHandler);
 
