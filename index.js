@@ -56,7 +56,9 @@ app.post('/api/notes', (request, response, next) => {
   });
 
   note.save()
-    .then(savedNote => response.json(savedNote))
+    .then(savedNote =>{
+      response.json(savedNote)
+    })
     .catch(error => next(error));
 });
 
@@ -69,13 +71,15 @@ app.delete('/api/notes/:id', (request, response, next) => {
 
 //修改笔记重要性
 app.put('/api/notes/:id',(request,response,next)=>{
-  const body = request.body
-  const note ={
-    content:body.content,
-    important:body.important
-  }
-  Note.findByIdAndUpdate(request.params.id,note,{new:true})
-  .then(updatedNote =>response.json(updatedNote))
+  const {content,important} = request.body
+
+  Note.findByIdAndUpdate(
+    request.params.id,
+    {content,important},
+    {new:true,runValidators:true,context:'query'})
+  .then(updatedNote =>{
+    response.json(updatedNote)
+  })
   .catch(error =>next(error))
 })
 
