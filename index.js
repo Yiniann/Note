@@ -1,119 +1,32 @@
-const config = require('./utils/config') // 引入配置文件
-const express = require('express');
-const app = express();
-const cors = require('cors');
-const notesRouter = require('./controllers/notes'); // 引入路由
-const mongoose = require('mongoose');
-require('dotenv').config(); // 引入环境变量
-const Note = require('./models/note'); // 引入模型
-const logger = require('./utils/logger') // 引入日志工具
+const config = require('./utils/config')
+const express = require('express')
+const app = express()
+const cors = require('cors')
+const notesRouter = require('./controllers/notes')
+const middleware = require('./utils/middleware')
+const logger = require('./utils/logger')
+const mongoose = require('mongoose')
 
-const requestLogger = (request, response, next) => {
-  console.log(`${request.method} ${request.url} - ${new Date()}`);
-  next();
-};
-app.use(requestLogger);
+mongoose.set('strictQuery', false)
 
-app.use(express.static('build')); // 服务静态文件
-app.use(cors()); // 允许跨域
-app.use(express.json()); // JSON 解析
+logger.info('connecting to', config.MONGODB_URI)
 
-// 根路由
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>');
-});
-
-// 获取所有笔记
-app.get('/api/notes', (request, response, next) => {
-  console.log('Fetching all notes...');
-  Note.find({})
-    .then(notes => response.json(notes))
-    .catch(error => next(error));
-});
-
-
-// 获取单条笔记
-app.get('/api/notes/:id', (request, response, next) => {
-  Note.findById(request.params.id)
-    .then(note => {
-      if (note) {
-        response.json(note);
-      } else {
-        response.status(404).end();
-      }
-    })
-    .catch(error => next(error))
-});
-
-// 增加笔记
-app.post('/api/notes', (request, response, next) => {
-  const body = request.body;
-
-  if (!body.content) {
-    return response.status(400).json({ error: 'content missing' });
-  }
-
-  const note = new Note({
-    content: body.content,
-    important: body.important || false,
-  });
-
-  note.save()
-    .then(savedNote =>{
-      response.json(savedNote)
-    })
-    .catch(error => next(error));
-});
-
-// 删除笔记
-app.delete('/api/notes/:id', (request, response, next) => {
-  Note.findByIdAndDelete(request.params.id)
-    .then(() => response.status(204).end())
-    .catch(error => next(error));
-});
-
-//修改笔记重要性
-app.put('/api/notes/:id',(request,response,next)=>{
-  const {content,important} = request.body
-
-  Note.findByIdAndUpdate(
-    request.params.id,
-    {content,important},
-    {new:true,runValidators:true,context:'query'})
-  .then(updatedNote =>{
-    response.json(updatedNote)
+mongoose.connect(config.MONGODB_URI)
+  .then(() => {
+    logger.info('connected to MongoDB')
   })
-  .catch(error =>next(error))
-})
+  .catch((error) => {
+    logger.error('error connecting to MongoDB:', error.message)
+  })
 
-// 未知路由处理
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' });
-};
-app.use(unknownEndpoint);
+app.use(cors())
+app.use(express.static('dist'))
+app.use(express.json())
+app.use(middleware.requestLogger)
 
-// 错误处理
-const errorHandler = (error, request, response, next) => {
-  console.error(error.message);
+app.use('/api/notes', notesRouter)
 
-  if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' });
-  }
+app.use(middleware.unknownEndpoint)
+app.use(middleware.errorHandler)
 
-  if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message });
-  }
-
-  if (error.code === 11000) {
-    return response.status(400).json({ error: 'duplicate entry' });
-  }
-
-  next(error); 
-};
-app.use(errorHandler);
-
-// 启动服务
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  logger.info(`Server running on port ${config.PORT}`);
-});
+module.exports = app
