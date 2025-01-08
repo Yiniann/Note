@@ -6,6 +6,7 @@ const notesRouter = require('./controllers/notes')
 const middleware = require('./utils/middleware')
 const logger = require('./utils/logger')
 const mongoose = require('mongoose')
+const server = http.createServer(app)
 
 mongoose.set('strictQuery', false)
 
@@ -31,7 +32,8 @@ app.use(middleware.errorHandler)
 
 module.exports = app
 
-const PORT = process.env.PORT
+
+
 
 server.listen(config.PORT, () => {
   logger.info(`Server running on port ${config.PORT}`)
