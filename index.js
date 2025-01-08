@@ -1,9 +1,12 @@
+const config = require('./utils/config') // 引入配置文件
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const notesRouter = require('./controllers/notes'); // 引入路由
 const mongoose = require('mongoose');
 require('dotenv').config(); // 引入环境变量
 const Note = require('./models/note'); // 引入模型
+const logger = require('./utils/logger') // 引入日志工具
 
 const requestLogger = (request, response, next) => {
   console.log(`${request.method} ${request.url} - ${new Date()}`);
@@ -112,5 +115,5 @@ app.use(errorHandler);
 // 启动服务
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${config.PORT}`);
 });
