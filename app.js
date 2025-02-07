@@ -1,4 +1,4 @@
-const config = require('./utils/config')
+const config = require('./utils/config')//导入环境变量
 const express = require('express')
 const app = express()
 require('express-async-errors')
