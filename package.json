@@ -1,31 +1,31 @@
 {
-  "name": "backend",
-  "version": "0.0.1",
+  "name": "notebackend",
+  "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=production node index.js",
     "dev": "NODE_ENV=development nodemon index.js",
     "test": "NODE_ENV=test node --test",
-    "build:ui": "rm -rf build && cd ../Fullstackopen/part2-notes/ && npm run build && cp -r build ../Backend",
-    "deploy": "git push",
-    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
-    "logs:prod": "heroku logs --tail"
+    "lint": "eslint .",
+    "start:test": "NODE_ENV=test node index.js"
   },
-  "author": "Y1niann",
-  "license": "MIT",
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.3",
-    "supertest": "^7.0.0"
+    "mongoose": "^8.1.1"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "nodemon": "^3.1.9",
-    "supertest": "^7.0.0"
+    "@flydotio/dockerfile": "^0.5.0",
+    "@stylistic/eslint-plugin-js": "^1.6.1",
+    "eslint": "^8.56.0",
+    "nodemon": "^3.0.3",
+    "supertest": "^6.3.4"
   }
 }
